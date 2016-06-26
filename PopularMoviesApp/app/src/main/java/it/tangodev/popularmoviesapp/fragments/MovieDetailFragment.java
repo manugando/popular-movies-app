@@ -16,16 +16,15 @@ import it.tangodev.popularmoviesapp.models.MovieDetails;
 
 public class MovieDetailFragment extends Fragment {
     public static final String MOVIE_OBJECT = "MOVIE_OBJECT";
-    private TextView movieDetailFragmentOverview;
+    private TextView movieDetailFragmentTitle, movieDetailFragmentOverview;
     private Movie movie;
-    private MovieDetailAsyncTask movieDetailAsyncTask;
-
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
         movieDetailFragmentOverview = (TextView) rootView.findViewById(R.id.movie_detail_fragment_overview);
+        movieDetailFragmentTitle = (TextView) rootView.findViewById(R.id.movie_detail_fragment_title);
 
         return rootView;
     }
@@ -38,20 +37,23 @@ public class MovieDetailFragment extends Fragment {
         if (arguments != null) {
             movie = (Movie) arguments.getSerializable(MovieDetailFragment.MOVIE_OBJECT);
         }
-        // TODO popola UI usando i dati già presenti
-
-        movieDetailAsyncTask = new MovieDetailAsyncTask() {
-            @Override
-            protected void onPostExecute(MovieDetails movieDetails) {
-                super.onPostExecute(movieDetails);
-                movieDetailFragmentOverview.setText(movieDetails.getReviews().size() + " - " + movieDetails.getVideos().size());
-            }
-        };
-
+        popolaUiPrincipale();
         loadMovieDetails();
     }
 
+    private void popolaUiPrincipale() {
+        movieDetailFragmentTitle.setText(movie.getTitle());
+        movieDetailFragmentOverview.setText(movie.getOverview());
+    }
+
     private void loadMovieDetails() {
+        MovieDetailAsyncTask movieDetailAsyncTask = new MovieDetailAsyncTask() {
+            @Override
+            protected void onPostExecute(MovieDetails movieDetails) {
+                super.onPostExecute(movieDetails);
+                // TODO popolare ui con dettagli
+            }
+        };
         movieDetailAsyncTask.execute(movie.getId());
     }
 }

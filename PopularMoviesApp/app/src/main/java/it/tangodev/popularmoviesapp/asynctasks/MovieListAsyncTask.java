@@ -1,5 +1,6 @@
 package it.tangodev.popularmoviesapp.asynctasks;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -13,13 +14,19 @@ import it.tangodev.popularmoviesapp.utils.Constants;
 import it.tangodev.popularmoviesapp.utils.HttpUtils;
 import it.tangodev.popularmoviesapp.utils.JsonConvertUtils;
 
-public class MovieListAsyncTask extends AsyncTask<Void, Void, List<Movie>> {
+public class MovieListAsyncTask extends AsyncTask<Integer, Void, List<Movie>> {
     public static final String LOG_TAG = MovieListAsyncTask.class.getSimpleName();
+    public static final int MODE_POPULAR = 1;
+    public static final int MODE_TOP_RATED = 2;
 
     @Override
-    protected List<Movie> doInBackground(Void... params) {
-        Uri builtUri = Uri.parse(Constants.MOVIE_LIST_URL).buildUpon()
+    protected List<Movie> doInBackground(Integer... params) {
+        int mode = params[0];
+        int page = params[1];
+        String baseUrl = mode == MODE_POPULAR ? Constants.POPULAR_MOVIE_LIST_URL : Constants.TOP_RATED_MOVIE_LIST_URL;
+        Uri builtUri = Uri.parse(baseUrl).buildUpon()
                 .appendQueryParameter(Constants.PARAM_API_KEY, BuildConfig.MOVIE_DB_ORG_KEY)
+                .appendQueryParameter(Constants.PARAM_PAGE, page + "")
                 .build();
 
         try {

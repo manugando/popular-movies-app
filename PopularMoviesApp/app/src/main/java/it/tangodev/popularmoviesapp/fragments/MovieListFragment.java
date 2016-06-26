@@ -6,22 +6,24 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import it.tangodev.popularmoviesapp.R;
 import it.tangodev.popularmoviesapp.adapters.MovieListAdapter;
 import it.tangodev.popularmoviesapp.asynctasks.MovieListAsyncTask;
 import it.tangodev.popularmoviesapp.models.Movie;
+import it.tangodev.popularmoviesapp.utils.Preferences;
 
 public class MovieListFragment extends Fragment {
     private MovieListAdapter movieListAdapter;
-    private MovieListAsyncTask movieListAsyncTask;
     private RecyclerView movieListRecyclerView;
+    private String currentMovieListMode;
+    private int currentPage = 1;
 
     @Nullable
     @Override
@@ -37,24 +39,49 @@ public class MovieListFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        movieListAdapter = new MovieListAdapter(getContext(), (MovieListAdapter.MovieListAdapterListener) getActivity());
+        movieListAdapter = new MovieListAdapter(getContext(), (MovieListAdapter.MovieListAdapterListener) getActivity()) {
+
+            @Override
+            public void onLastItemBind() {
+                if(!currentMovieListMode.equals(getString(R.string.pref_movie_list_mode_key_favourites))) {
+                    currentPage ++;
+                    loadMoviesFromServer();
+                }
+            }
+        };
         movieListRecyclerView.setAdapter(movieListAdapter);
         movieListRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
-        movieListAsyncTask = new MovieListAsyncTask() {
+        onMovieListModeChange();
+    }
+
+    public void onMovieListModeChange() {
+        movieListRecyclerView.scrollToPosition(0);
+        movieListAdapter.getDataset().clear();
+        movieListAdapter.notifyDataSetChanged();
+        currentPage = 1;
+        currentMovieListMode = Preferences.getPreferredMovieListMode(getContext());
+
+        if(currentMovieListMode.equals(getString(R.string.pref_movie_list_mode_key_favourites))) {
+            movieListAdapter.getDataset().clear();
+            // TODO leggere i preferiti
+            movieListAdapter.notifyDataSetChanged();
+        } else {
+            loadMoviesFromServer();
+        }
+    }
+
+    private void loadMoviesFromServer() {
+        MovieListAsyncTask movieListAsyncTask = new MovieListAsyncTask() {
             @Override
             protected void onPostExecute(List<Movie> movies) {
                 super.onPostExecute(movies);
-                movieListAdapter.getDataset().clear();
                 movieListAdapter.getDataset().addAll(movies);
                 movieListAdapter.notifyDataSetChanged();
             }
         };
-
-        updateMovieList();
-    }
-
-    private void updateMovieList() {
-        movieListAsyncTask.execute();
+        movieListAsyncTask.execute(currentMovieListMode.equals(getString(R.string.pref_movie_list_mode_key_top_rated)) ?
+                MovieListAsyncTask.MODE_TOP_RATED :
+                MovieListAsyncTask.MODE_POPULAR, currentPage);
     }
 }

@@ -11,7 +11,6 @@ import it.tangodev.popularmoviesapp.asynctasks.MovieDetailAsyncTask;
 import it.tangodev.popularmoviesapp.fragments.MovieDetailFragment;
 
 public class DetailActivity extends AppCompatActivity {
-    private MovieDetailAsyncTask movieDetailAsyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

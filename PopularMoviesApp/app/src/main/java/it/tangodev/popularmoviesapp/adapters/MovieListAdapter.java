@@ -17,7 +17,7 @@ import java.util.List;
 import it.tangodev.popularmoviesapp.R;
 import it.tangodev.popularmoviesapp.models.Movie;
 
-public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.ViewHolder> {
+public abstract class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.ViewHolder> {
     private List<Movie> dataset;
     private Context context;
     private MovieListAdapterListener listener;
@@ -46,6 +46,9 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
             }
         });
         Picasso.with(context).load(movie.getPosterUrl()).fit().centerCrop().into(holder.movieListCellImageview);
+        if(position == getItemCount() - 1) {
+            onLastItemBind();
+        }
     }
 
     @Override
@@ -69,4 +72,6 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
     public interface MovieListAdapterListener {
         void onItemClick(Movie movie);
     }
+
+    public abstract void onLastItemBind();
 }

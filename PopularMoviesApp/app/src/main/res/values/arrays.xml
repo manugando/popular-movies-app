@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_movie_list_mode_labels">
+        <item>@string/pref_movie_list_mode_label_top_rated</item>
+        <item>@string/pref_movie_list_mode_label_popular</item>
+        <item>@string/pref_movie_list_mode_label_favourites</item>
+    </string-array>
+
+    <string-array name="pref_movie_list_mode_keys">
+        <item>@string/pref_movie_list_mode_key_top_rated</item>
+        <item>@string/pref_movie_list_mode_key_popular</item>
+        <item>@string/pref_movie_list_mode_key_favourites</item>
+    </string-array>
+</resources>

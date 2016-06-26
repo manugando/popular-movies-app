@@ -5,7 +5,19 @@
 
     <TextView
         android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:padding="@dimen/default_margin"
+        android:background="@color/colorAccent"
+        android:textSize="@dimen/hero_text"
+        android:textColor="@android:color/white"
+        android:text="Large Text"
+        android:id="@+id/movie_detail_fragment_title"
+        android:gravity="center_vertical" />
+
+    <TextView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="@dimen/default_margin"
         android:id="@+id/movie_detail_fragment_overview"/>
 
 </LinearLayout>

@@ -6,7 +6,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import it.tangodev.popularmoviesapp.models.Movie;
@@ -40,7 +42,11 @@ public class JsonConvertUtils {
             movie.setTitle(jsonObject.getString("title"));
             movie.setOverview(jsonObject.getString("overview"));
             movie.setPosterUrl(Constants.MOVIE_POSTER_BASE_URL + jsonObject.getString("poster_path"));
+            movie.setVoteAvg(jsonObject.getLong("vote_average"));
 
+            String dateStr = jsonObject.getString("release_date");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            movie.setReleaseDate(sdf.parse(dateStr));
             return movie;
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error:" , e);

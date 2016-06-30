@@ -1,5 +1,6 @@
 package it.tangodev.popularmoviesapp.fragments;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import it.tangodev.popularmoviesapp.R;
 import it.tangodev.popularmoviesapp.adapters.MovieListAdapter;
+import it.tangodev.popularmoviesapp.asynctasks.FavouriteMovieListAsyncTask;
 import it.tangodev.popularmoviesapp.asynctasks.MovieListAsyncTask;
 import it.tangodev.popularmoviesapp.models.Movie;
 import it.tangodev.popularmoviesapp.utils.Preferences;
@@ -63,9 +65,7 @@ public class MovieListFragment extends Fragment {
         currentMovieListMode = Preferences.getPreferredMovieListMode(getContext());
 
         if(currentMovieListMode.equals(getString(R.string.pref_movie_list_mode_key_favourites))) {
-            movieListAdapter.getDataset().clear();
-            // TODO leggere i preferiti
-            movieListAdapter.notifyDataSetChanged();
+            loadFavouriteMovies();
         } else {
             loadMoviesFromServer();
         }
@@ -83,5 +83,17 @@ public class MovieListFragment extends Fragment {
         movieListAsyncTask.execute(currentMovieListMode.equals(getString(R.string.pref_movie_list_mode_key_top_rated)) ?
                 MovieListAsyncTask.MODE_TOP_RATED :
                 MovieListAsyncTask.MODE_POPULAR, currentPage);
+    }
+
+    private void loadFavouriteMovies() {
+        FavouriteMovieListAsyncTask favouriteMovieListAsyncTask = new FavouriteMovieListAsyncTask(getContext()) {
+            @Override
+            protected void onPostExecute(List<Movie> movies) {
+                super.onPostExecute(movies);
+                movieListAdapter.getDataset().addAll(movies);
+                movieListAdapter.notifyDataSetChanged();
+            }
+        };
+        favouriteMovieListAsyncTask.execute();
     }
 }

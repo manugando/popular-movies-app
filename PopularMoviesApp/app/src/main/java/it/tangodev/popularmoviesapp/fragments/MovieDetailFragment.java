@@ -6,12 +6,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.support.v7.widget.ShareActionProvider;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,6 +27,8 @@ import java.text.SimpleDateFormat;
 import it.tangodev.popularmoviesapp.R;
 import it.tangodev.popularmoviesapp.adapters.MovieReviewListAdapter;
 import it.tangodev.popularmoviesapp.adapters.MovieVideoListAdapter;
+import it.tangodev.popularmoviesapp.asynctasks.AddFavouriteMovieAsyncTask;
+import it.tangodev.popularmoviesapp.asynctasks.IsFavouriteMovieAsyncTask;
 import it.tangodev.popularmoviesapp.asynctasks.MovieDetailAsyncTask;
 import it.tangodev.popularmoviesapp.models.Movie;
 import it.tangodev.popularmoviesapp.models.MovieDetails;
@@ -31,10 +38,16 @@ public class MovieDetailFragment extends Fragment {
     public static final String MOVIE_OBJECT = "MOVIE_OBJECT";
     private TextView movieDetailFragmentTitle, movieDetailFragmentOverview, movieDetailFragmentYear, movieDetailFragmentVote, movieDetailFragmentDuration;
     private ImageView movieDetailFragmentPoster;
+    private Button movieDetailFragmentAddFav;
     private RecyclerView movieDetailFragmentVideos, movieDetailFragmentReviews;
     private MovieVideoListAdapter movieVideoListAdapter;
     private MovieReviewListAdapter movieReviewListAdapter;
+    private ShareActionProvider shareActionProvider;
     private Movie movie;
+
+    public MovieDetailFragment() {
+        setHasOptionsMenu(true);
+    }
 
     @Nullable
     @Override
@@ -46,6 +59,14 @@ public class MovieDetailFragment extends Fragment {
         movieDetailFragmentVote = (TextView) rootView.findViewById(R.id.movie_detail_fragment_vote);
         movieDetailFragmentDuration = (TextView) rootView.findViewById(R.id.movie_detail_fragment_duration);
         movieDetailFragmentPoster = (ImageView) rootView.findViewById(R.id.movie_detail_fragment_poster);
+        movieDetailFragmentAddFav = (Button) rootView.findViewById(R.id.movie_detail_fragment_add_fav);
+
+        movieDetailFragmentAddFav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addToFavourite();
+            }
+        });
 
         movieDetailFragmentVideos = (RecyclerView) rootView.findViewById(R.id.movie_detail_fragment_videos);
         movieVideoListAdapter = new MovieVideoListAdapter() {
@@ -76,7 +97,30 @@ public class MovieDetailFragment extends Fragment {
         }
 
         popolaUiPrincipale();
+        checkIsFavouriteMovie();
         loadMovieDetails();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.detailfragment, menu);
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+        if(movieVideoListAdapter != null) {
+            shareActionProvider.setShareIntent(createShareIntent());
+        }
+    }
+
+    private Intent createShareIntent() {
+        if(!movieVideoListAdapter.getDataset().isEmpty()) {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "https://www.youtube.com/watch?v=" + movieVideoListAdapter.getDataset().get(0).getKey());
+            return shareIntent;
+        } else {
+            return null;
+        }
     }
 
     private void popolaUiPrincipale() {
@@ -94,16 +138,20 @@ public class MovieDetailFragment extends Fragment {
             protected void onPostExecute(MovieDetails movieDetails) {
                 super.onPostExecute(movieDetails);
                 movieVideoListAdapter.getDataset().clear();
-                if(movieDetails.getVideos() != null) {
+                if(movieDetails != null && movieDetails.getVideos() != null) {
                     movieVideoListAdapter.getDataset().addAll(movieDetails.getVideos());
                 }
                 movieVideoListAdapter.notifyDataSetChanged();
 
                 movieReviewListAdapter.getDataset().clear();
-                if(movieDetails.getReviews() != null) {
+                if(movieDetails != null && movieDetails.getReviews() != null) {
                     movieReviewListAdapter.getDataset().addAll(movieDetails.getReviews());
                 }
                 movieReviewListAdapter.notifyDataSetChanged();
+
+                if(shareActionProvider != null) {
+                    shareActionProvider.setShareIntent(createShareIntent());
+                }
             }
         };
         movieDetailAsyncTask.execute(movie.getId());
@@ -118,5 +166,27 @@ public class MovieDetailFragment extends Fragment {
         } else {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + videoId)));
         }
+    }
+
+    private void addToFavourite() {
+        AddFavouriteMovieAsyncTask addFavouriteMovieAsyncTask = new AddFavouriteMovieAsyncTask(getContext()) {
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                super.onPostExecute(aBoolean);
+                movieDetailFragmentAddFav.setEnabled(!aBoolean);
+            }
+        };
+        addFavouriteMovieAsyncTask.execute(movie);
+    }
+
+    private void checkIsFavouriteMovie() {
+        IsFavouriteMovieAsyncTask isFavouriteMovieAsyncTask = new IsFavouriteMovieAsyncTask(getContext()) {
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                super.onPostExecute(aBoolean);
+                movieDetailFragmentAddFav.setEnabled(!aBoolean);
+            }
+        };
+        isFavouriteMovieAsyncTask.execute(movie.getId());
     }
 }

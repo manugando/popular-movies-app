@@ -36,6 +36,8 @@ import it.tangodev.popularmoviesapp.models.MovieVideo;
 
 public class MovieDetailFragment extends Fragment {
     public static final String MOVIE_OBJECT = "MOVIE_OBJECT";
+    public static final String FRAGMENT_TAG = "MOVIE_DETAIL_FRAGMENT";
+    private View movieDetailFragmentContainer;
     private TextView movieDetailFragmentTitle, movieDetailFragmentOverview, movieDetailFragmentYear, movieDetailFragmentVote, movieDetailFragmentDuration;
     private ImageView movieDetailFragmentPoster;
     private Button movieDetailFragmentAddFav;
@@ -53,6 +55,7 @@ public class MovieDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
+        movieDetailFragmentContainer = rootView.findViewById(R.id.movie_detail_fragment_container);
         movieDetailFragmentOverview = (TextView) rootView.findViewById(R.id.movie_detail_fragment_overview);
         movieDetailFragmentTitle = (TextView) rootView.findViewById(R.id.movie_detail_fragment_title);
         movieDetailFragmentYear = (TextView) rootView.findViewById(R.id.movie_detail_fragment_year);
@@ -94,11 +97,12 @@ public class MovieDetailFragment extends Fragment {
         Bundle arguments = getArguments();
         if (arguments != null) {
             movie = (Movie) arguments.getSerializable(MovieDetailFragment.MOVIE_OBJECT);
-        }
 
-        popolaUiPrincipale();
-        checkIsFavouriteMovie();
-        loadMovieDetails();
+            movieDetailFragmentContainer.setVisibility(View.VISIBLE);
+            popolaUiPrincipale();
+            checkIsFavouriteMovie();
+            loadMovieDetails();
+        }
     }
 
     @Override

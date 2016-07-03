@@ -26,12 +26,13 @@ public class MovieListFragment extends Fragment {
     private RecyclerView movieListRecyclerView;
     private String currentMovieListMode;
     private int currentPage = 1;
+    private int numberOfColumns = 2;
+    private GridLayoutManager gridLayoutManager;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_movie_list, container, false);
-
         movieListRecyclerView = (RecyclerView) rootView.findViewById(R.id.movie_list_recycler_view);
 
         return rootView;
@@ -52,9 +53,17 @@ public class MovieListFragment extends Fragment {
             }
         };
         movieListRecyclerView.setAdapter(movieListAdapter);
-        movieListRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        gridLayoutManager = new GridLayoutManager(getContext(), numberOfColumns);
+        movieListRecyclerView.setLayoutManager(gridLayoutManager);
 
         onMovieListModeChange();
+    }
+
+    public void setNumberOfColumns(int numberOfColumns) {
+        this.numberOfColumns = numberOfColumns;
+        if(this.gridLayoutManager != null) {
+            this.gridLayoutManager.setSpanCount(this.numberOfColumns);
+        }
     }
 
     public void onMovieListModeChange() {

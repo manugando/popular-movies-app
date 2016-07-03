@@ -19,6 +19,7 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         if (savedInstanceState == null) {
+            // TODO USARE PARCELABLE
             Bundle arguments = new Bundle();
             arguments.putSerializable(MovieDetailFragment.MOVIE_OBJECT, getIntent().getSerializableExtra(MovieDetailFragment.MOVIE_OBJECT));
 

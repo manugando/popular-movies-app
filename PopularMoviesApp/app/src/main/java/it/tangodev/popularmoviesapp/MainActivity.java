@@ -15,12 +15,25 @@ import it.tangodev.popularmoviesapp.utils.Preferences;
 
 public class MainActivity extends AppCompatActivity implements MovieListAdapter.MovieListAdapterListener {
     private String currentMovieListMode;
+    private boolean isModalitaMasterDetail = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         currentMovieListMode = Preferences.getPreferredMovieListMode(this);
         setContentView(R.layout.activity_main);
+
+        if (findViewById(R.id.movie_detail_container) != null) {
+            isModalitaMasterDetail = true;
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.movie_detail_container, new MovieDetailFragment(), MovieDetailFragment.FRAGMENT_TAG)
+                        .commit();
+            }
+
+            MovieListFragment movieListFragment =  ((MovieListFragment)getSupportFragmentManager().findFragmentById(R.id.movie_list_fragment));
+            movieListFragment.setNumberOfColumns(3);
+        }
     }
 
     @Override
@@ -43,10 +56,28 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
 
     @Override
     public void onItemClick(Movie movie) {
-        Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
         // TODO USARE PARCELABLE
-        intent.putExtra(MovieDetailFragment.MOVIE_OBJECT, movie);
-        startActivity(intent);
+        if(isModalitaMasterDetail) {
+            switchDetailFragment(movie);
+        } else {
+            Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+            intent.putExtra(MovieDetailFragment.MOVIE_OBJECT, movie);
+            startActivity(intent);
+        }
+    }
+
+    private void switchDetailFragment(Movie movie) {
+        MovieDetailFragment fragment = new MovieDetailFragment();
+
+        if(movie != null) {
+            Bundle arguments = new Bundle();
+            arguments.putSerializable(MovieDetailFragment.MOVIE_OBJECT, movie);
+            fragment.setArguments(arguments);
+        }
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.movie_detail_container, fragment, MovieDetailFragment.FRAGMENT_TAG)
+                .commit();
     }
 
     @Override
@@ -57,6 +88,9 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
             MovieListFragment movieListFragment = (MovieListFragment)getSupportFragmentManager().findFragmentById(R.id.movie_list_fragment);
             if (null != movieListFragment) {
                 movieListFragment.onMovieListModeChange();
+            }
+            if(isModalitaMasterDetail) {
+                switchDetailFragment(null);
             }
             currentMovieListMode = movieListMode;
         }
